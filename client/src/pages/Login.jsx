@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
+import Button from "../components/ui/Button";
+import Input from "../components/ui/Input";
+import Card from "../components/ui/Card";
+import Container from "../components/ui/Container";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -46,93 +50,146 @@ const Login = () => {
 
   return (
     <div style={styles.container}>
-      <form style={styles.form} onSubmit={handleSubmit}>
-        <h2 style={styles.title}>Login</h2>
+      <Container>
+        <div style={styles.content}>
+          <div style={styles.leftPanel}>
+            <h1 style={styles.title}>Sign in</h1>
+            <p style={styles.subtitle}>Stay updated on your professional world</p>
 
-        {error && <p style={styles.error}>{error}</p>}
+            {error && <div style={styles.error}>{error}</div>}
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-          style={styles.input}
-          required
-        />
+            <form style={styles.form} onSubmit={handleSubmit}>
+              <Input
+                label="Email or phone"
+                type="email"
+                name="email"
+                placeholder=""
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-          style={styles.input}
-          required
-        />
+              <Input
+                label="Password"
+                type="password"
+                name="password"
+                placeholder="6+ characters"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
 
-        <button type="submit" style={styles.button} disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
-        </button>
+              <div style={styles.forgotPassword}>
+                <Link to="/forgot-password" style={styles.forgotLink}>Forgot password?</Link>
+              </div>
 
-        <p style={styles.linkText}>
-          Don't have an account? <Link to="/register">Register</Link>
-        </p>
-      </form>
+              <Button type="submit" disabled={loading} style={styles.button}>
+                {loading ? "Signing in..." : "Sign in"}
+              </Button>
+            </form>
+          </div>
+
+          <div style={styles.rightPanel}>
+            <div style={styles.rightContent}>
+              <h2 style={styles.rightTitle}>New to <span style={{color: '#007bff'}}>CareerPoint</span> ?</h2>
+              <p style={styles.rightText}>
+                Discover new opportunities, connect with professionals, and advance your career.
+              </p>
+              <Link to="/register">
+                <Button variant="outline" style={styles.rightButton}>
+                  Join now
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </Container>
     </div>
   );
 };
 
 const styles = {
   container: {
+    minHeight: "calc(100vh - 52px)",
+    backgroundColor: "#ffffff",
     display: "flex",
-    justifyContent: "center",
     alignItems: "center",
-    minHeight: "100vh",
-    backgroundColor: "#f8fafc",
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
   },
-  form: {
-    backgroundColor: "#fff",
-    padding: "40px",
-    borderRadius: "10px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-    width: "350px",
+  content: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "0",
+    maxWidth: "1128px",
+    margin: "0 auto",
+    width: "100%",
+    minHeight: "600px",
+  },
+  leftPanel: {
+    padding: "48px",
     display: "flex",
     flexDirection: "column",
   },
   title: {
-    textAlign: "center",
-    marginBottom: "20px",
-    color: "#1e293b",
+    fontSize: "32px",
+    fontWeight: "700",
+    marginBottom: "8px",
+    color: "#191919",
   },
-  input: {
-    padding: "10px",
-    marginBottom: "15px",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
-    fontSize: "1rem",
-  },
-  button: {
-    padding: "12px",
-    backgroundColor: "#2563eb",
-    color: "#fff",
-    border: "none",
-    borderRadius: "6px",
-    fontSize: "1rem",
-    cursor: "pointer",
-    fontWeight: "600",
+  subtitle: {
+    fontSize: "16px",
+    marginBottom: "32px",
+    color: "#666666",
   },
   error: {
-    color: "red",
-    fontSize: "0.9rem",
-    marginBottom: "10px",
-    textAlign: "center",
+    backgroundColor: "#fde8e8",
+    color: "#c53030",
+    padding: "12px 16px",
+    borderRadius: "4px",
+    marginBottom: "24px",
+    fontSize: "14px",
   },
-  linkText: {
-    textAlign: "center",
-    marginTop: "15px",
-    fontSize: "0.9rem",
+  form: {
+    display: "flex",
+    flexDirection: "column",
+  },
+  forgotPassword: {
+    textAlign: "right",
+    marginBottom: "24px",
+  },
+  forgotLink: {
+    color: "#0a66c2",
+    textDecoration: "none",
+    fontSize: "14px",
+    fontWeight: "600",
+  },
+  button: {
+    width: "100%",
+  },
+  rightPanel: {
+    backgroundColor: "#f3f2ef",
+    padding: "48px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  rightContent: {
+    maxWidth: "400px",
+  },
+  rightTitle: {
+    fontSize: "32px",
+    fontWeight: "700",
+    marginBottom: "16px",
+    color: "#191919",
+  },
+  rightText: {
+    fontSize: "16px",
+    marginBottom: "32px",
+    color: "#666666",
+    lineHeight: "1.6",
+  },
+  rightButton: {
+    width: "100%",
   },
 };
 

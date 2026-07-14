@@ -1,5 +1,7 @@
 const Job = require("../models/Job");
+const Application = require("../models/Application");
 const User = require("../models/User");
+const { validateJob } = require("../utils/validators");
 
 const createJob = async (req, res) => {
   try {
@@ -13,6 +15,11 @@ const createJob = async (req, res) => {
       experienceRequired,
       skillsRequired,
     } = req.body;
+
+    const errors = validateJob(req.body);
+    if (errors.length > 0) {
+      return res.status(400).json({ message: errors[0] });
+    }
 
     const newJob = await Job.create({
       title,
@@ -59,6 +66,7 @@ const getAllJobs = async (req, res) => {
     const skip = (pageNumber - 1) * limitNumber;
 
     const jobs = await Job.find(query)
+      .populate("postedBy", "name industry companyWebsite")
       .skip(skip)
       .limit(limitNumber)
       .sort({ createdAt: -1 });
@@ -96,7 +104,9 @@ const getRecommendedJobs = async (req, res) => {
 
     const jobs = await Job.find({
       skillsRequired: { $regex: regexPattern, $options: "i" },
-    }).sort({ createdAt: -1 });
+    })
+      .populate("postedBy", "name industry companyWebsite")
+      .sort({ createdAt: -1 });
 
     res.status(200).json({ jobs });
   } catch (error) {
@@ -113,4 +123,85 @@ const getMyJobs = async (req, res) => {
   }
 };
 
-module.exports = { createJob, getAllJobs, getRecommendedJobs, getMyJobs };
+const getJobById = async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.id).populate(
+      "postedBy",
+      "name industry companyWebsite bio"
+    );
+
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    res.status(200).json({ job });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+const updateJob = async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.id);
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    if (job.postedBy.toString() !== req.user.id) {
+      return res.status(403).json({ message: "You did not post this job" });
+    }
+
+    const {
+      title,
+      description,
+      location,
+      category,
+      salary,
+      jobType,
+      experienceRequired,
+      skillsRequired,
+    } = req.body;
+
+    const errors = validateJob({ ...job.toObject(), ...req.body });
+    if (errors.length > 0) {
+      return res.status(400).json({ message: errors[0] });
+    }
+
+    if (title) job.title = title;
+    if (description) job.description = description;
+    if (location) job.location = location;
+    if (category) job.category = category;
+    if (salary) job.salary = salary;
+    if (jobType) job.jobType = jobType;
+    if (experienceRequired !== undefined) job.experienceRequired = experienceRequired;
+    if (skillsRequired !== undefined) job.skillsRequired = skillsRequired;
+
+    await job.save();
+
+    res.status(200).json({ message: "Job updated successfully", job });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+const deleteJob = async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.id);
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    if (job.postedBy.toString() !== req.user.id) {
+      return res.status(403).json({ message: "You did not post this job" });
+    }
+
+    await Application.deleteMany({ job: job._id });
+    await Job.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({ message: "Job deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+module.exports = { createJob, getAllJobs, getRecommendedJobs, getMyJobs, getJobById, updateJob, deleteJob };

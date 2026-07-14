@@ -1,9 +1,15 @@
 const Application = require("../models/Application");
 const Job = require("../models/Job");
+const { validateApplication } = require("../utils/validators");
 
 const applyToJob = async (req, res) => {
   try {
     const { jobId, coverNote } = req.body;
+
+    const errors = validateApplication({ jobId });
+    if (errors.length > 0) {
+      return res.status(400).json({ message: errors[0] });
+    }
 
     const job = await Job.findById(jobId);
     if (!job) {
@@ -91,7 +97,11 @@ const updateApplicationStatus = async (req, res) => {
 const getMyApplications = async (req, res) => {
   try {
     const applications = await Application.find({ applicant: req.user.id })
-      .populate("job", "title company location salary jobType")
+      .populate({
+        path: "job",
+        select: "title location salary jobType",
+        populate: { path: "postedBy", select: "name" },
+      })
       .sort({ createdAt: -1 });
 
     res.status(200).json({ applications });

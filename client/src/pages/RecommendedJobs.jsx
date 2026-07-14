@@ -3,9 +3,22 @@ import api from "../services/api";
 
 const RecommendedJobs = () => {
   const [jobs, setJobs] = useState([]);
+  const [appliedJobIds, setAppliedJobIds] = useState(new Set());
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [applyMessage, setApplyMessage] = useState("");
+  const [applyingToJobId, setApplyingToJobId] = useState(null);
+  const [coverNote, setCoverNote] = useState("");
+
+  const fetchAppliedJobs = async () => {
+    try {
+      const response = await api.get("/applications/my");
+      const ids = new Set(response.data.applications.map((app) => app.job?._id));
+      setAppliedJobIds(ids);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const fetchRecommended = async () => {
     setLoading(true);
@@ -21,17 +34,32 @@ const RecommendedJobs = () => {
   };
 
   useEffect(() => {
+    fetchAppliedJobs();
     fetchRecommended();
   }, []);
 
-  const handleApply = async (jobId) => {
+  const handleApplyClick = (jobId) => {
+    setApplyingToJobId(jobId);
+    setCoverNote("");
+    setApplyMessage("");
+  };
+
+  const handleApplySubmit = async (jobId) => {
     setApplyMessage("");
     try {
-      await api.post("/applications", { jobId });
+      await api.post("/applications", { jobId, coverNote });
       setApplyMessage("Applied successfully!");
+      setAppliedJobIds((prev) => new Set([...prev, jobId]));
+      setApplyingToJobId(null);
+      setCoverNote("");
     } catch (err) {
       setApplyMessage(err.response?.data?.message || "Failed to apply");
     }
+  };
+
+  const handleCancelApply = () => {
+    setApplyingToJobId(null);
+    setCoverNote("");
   };
 
   return (
@@ -51,9 +79,31 @@ const RecommendedJobs = () => {
             <h3>{job.title}</h3>
             <p>{job.description}</p>
             <p><strong>Skills Required:</strong> {job.skillsRequired}</p>
-            <button onClick={() => handleApply(job._id)} style={styles.button}>
-              Apply
-            </button>
+
+            {appliedJobIds.has(job._id) ? (
+              <span style={styles.appliedBadge}>Already Applied</span>
+            ) : applyingToJobId === job._id ? (
+              <div style={styles.applyForm}>
+                <textarea
+                  placeholder="Cover note (optional)"
+                  value={coverNote}
+                  onChange={(e) => setCoverNote(e.target.value)}
+                  style={styles.textarea}
+                />
+                <div style={styles.applyActions}>
+                  <button onClick={() => handleApplySubmit(job._id)} style={styles.button}>
+                    Submit Application
+                  </button>
+                  <button onClick={handleCancelApply} style={styles.cancelButton}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button onClick={() => handleApplyClick(job._id)} style={styles.button}>
+                Apply
+              </button>
+            )}
           </div>
         ))
       )}
@@ -65,8 +115,6 @@ const styles = {
   container: {
     padding: "30px",
     fontFamily: "Arial, sans-serif",
-    maxWidth: "700px",
-    margin: "0 auto",
   },
   subtitle: {
     color: "#64748b",
@@ -86,6 +134,39 @@ const styles = {
     border: "none",
     borderRadius: "6px",
     cursor: "pointer",
+  },
+  cancelButton: {
+    padding: "8px 16px",
+    backgroundColor: "#fff",
+    color: "#64748b",
+    border: "1px solid #ccc",
+    borderRadius: "6px",
+    cursor: "pointer",
+  },
+  applyForm: {
+    marginTop: "10px",
+  },
+  textarea: {
+    width: "100%",
+    padding: "8px",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
+    minHeight: "60px",
+    marginBottom: "8px",
+    boxSizing: "border-box",
+  },
+  applyActions: {
+    display: "flex",
+    gap: "10px",
+  },
+  appliedBadge: {
+    display: "inline-block",
+    padding: "8px 16px",
+    backgroundColor: "#f1f5f9",
+    color: "#64748b",
+    borderRadius: "6px",
+    fontWeight: "600",
+    fontSize: "0.9rem",
   },
   applyMessage: {
     color: "#16a34a",

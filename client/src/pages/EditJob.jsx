@@ -1,8 +1,9 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import api from "../services/api";
 
-const PostJob = () => {
+const EditJob = () => {
+  const { jobId } = useParams();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -18,6 +19,35 @@ const PostJob = () => {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
+
+  useEffect(() => {
+    const fetchJob = async () => {
+      try {
+        const response = await api.get("/jobs/my");
+        const job = response.data.jobs.find((j) => j._id === jobId);
+        if (!job) {
+          setError("Job not found");
+          return;
+        }
+        setFormData({
+          title: job.title,
+          description: job.description,
+          location: job.location,
+          category: job.category,
+          salary: job.salary,
+          jobType: job.jobType,
+          experienceRequired: job.experienceRequired || "",
+          skillsRequired: job.skillsRequired || "",
+        });
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to load job");
+      } finally {
+        setFetching(false);
+      }
+    };
+    fetchJob();
+  }, [jobId]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -29,7 +59,7 @@ const PostJob = () => {
     setLoading(true);
 
     try {
-      await api.post("/jobs", formData);
+      await api.put(`/jobs/${jobId}`, formData);
       navigate("/company/dashboard");
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");
@@ -38,10 +68,13 @@ const PostJob = () => {
     }
   };
 
+  if (fetching) return <p style={styles.container}>Loading...</p>;
+
   return (
     <div style={styles.container}>
       <form style={styles.form} onSubmit={handleSubmit}>
-        <h2>Post a New Job</h2>
+        <Link to="/company/dashboard" style={styles.backLink}>← Back to Dashboard</Link>
+        <h2>Edit Job</h2>
 
         {error && <p style={styles.error}>{error}</p>}
 
@@ -120,7 +153,7 @@ const PostJob = () => {
         />
 
         <button type="submit" style={styles.button} disabled={loading}>
-          {loading ? "Posting..." : "Post Job"}
+          {loading ? "Saving..." : "Save Changes"}
         </button>
       </form>
     </div>
@@ -142,6 +175,11 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: "12px",
+  },
+  backLink: {
+    color: "#2563eb",
+    textDecoration: "none",
+    fontSize: "0.9rem",
   },
   input: {
     padding: "10px",
@@ -169,4 +207,4 @@ const styles = {
   },
 };
 
-export default PostJob;
+export default EditJob;

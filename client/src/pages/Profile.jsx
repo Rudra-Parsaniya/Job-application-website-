@@ -159,8 +159,6 @@ const Profile = () => {
 
 const styles = {
   container: {
-    display: "flex",
-    justifyContent: "center",
     padding: "40px",
     fontFamily: "Arial, sans-serif",
   },
@@ -169,7 +167,8 @@ const styles = {
     padding: "30px",
     borderRadius: "10px",
     boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-    width: "400px",
+    maxWidth: "500px",
+    margin: "0 auto",
     display: "flex",
     flexDirection: "column",
     gap: "10px",

@@ -41,6 +41,9 @@ const MyApplications = () => {
         applications.map((app) => (
           <div key={app._id} style={styles.card}>
             <h3>{app.job?.title}</h3>
+            {app.job?.postedBy?.name && (
+              <p><strong>Company:</strong> {app.job.postedBy.name}</p>
+            )}
             <p><strong>Location:</strong> {app.job?.location}</p>
             <p><strong>Job Type:</strong> {app.job?.jobType}</p>
             <p>
@@ -60,8 +63,6 @@ const styles = {
   container: {
     padding: "30px",
     fontFamily: "Arial, sans-serif",
-    maxWidth: "700px",
-    margin: "0 auto",
   },
   count: {
     color: "#64748b",

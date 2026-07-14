@@ -2,12 +2,16 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import JobSeekerDashboard from "./pages/JobSeekerDashboard";
 import CompanyDashboard from "./pages/CompanyDashboard";
 import PostJob from "./pages/PostJob";
+import EditJob from "./pages/EditJob";
 import ViewApplicants from "./pages/ViewApplicants";
 import MyApplications from "./pages/MyApplications";
 import RecommendedJobs from "./pages/RecommendedJobs";
+import JobDetail from "./pages/JobDetail";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
@@ -20,6 +24,8 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
 
         <Route
           path="/jobseeker/dashboard"
@@ -45,6 +51,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/jobs/:jobId"
+          element={
+            <ProtectedRoute allowedRole="jobseeker">
+              <JobDetail />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/company/dashboard"
@@ -59,6 +73,14 @@ function App() {
           element={
             <ProtectedRoute allowedRole="company">
               <PostJob />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/company/jobs/:jobId/edit"
+          element={
+            <ProtectedRoute allowedRole="company">
+              <EditJob />
             </ProtectedRoute>
           }
         />

@@ -85,8 +85,6 @@ const styles = {
   container: {
     padding: "30px",
     fontFamily: "Arial, sans-serif",
-    maxWidth: "700px",
-    margin: "0 auto",
   },
   backLink: {
     display: "inline-block",
