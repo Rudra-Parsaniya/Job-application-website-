@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import { LogOut, Briefcase, User } from "lucide-react";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -12,101 +13,59 @@ const Navbar = () => {
   };
 
   return (
-    <nav style={styles.navbar}>
-      <Link to="/" style={styles.logo}>
+    <nav className="sticky top-0 z-50 w-full glass-panel border-b border-white/20 px-6 h-16 flex items-center justify-between">
+      <Link to="/" className="text-xl font-extrabold text-primary tracking-tight flex items-center gap-2">
+        <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white">
+          <Briefcase size={18} />
+        </div>
         CareerPoint
       </Link>
 
-      <div style={styles.links}>
+      <div className="flex items-center gap-6">
         {user ? (
           <>
             {user.role === "jobseeker" && (
-              <>
-                <Link to="/jobseeker/dashboard" style={styles.link}>Jobs</Link>
-                <Link to="/jobseeker/applications" style={styles.link}>My Applications</Link>
-                <Link to="/jobseeker/recommended" style={styles.link}>Recommended</Link>
-              </>
+              <div className="flex items-center gap-6 mr-4">
+                <Link to="/jobseeker/dashboard" className="text-sm font-semibold text-primary/80 hover:text-accent transition-colors">Jobs</Link>
+                <Link to="/jobseeker/applications" className="text-sm font-semibold text-primary/80 hover:text-accent transition-colors">My Applications</Link>
+                <Link to="/jobseeker/recommended" className="text-sm font-semibold text-primary/80 hover:text-accent transition-colors">Recommended</Link>
+              </div>
             )}
 
             {user.role === "company" && (
-              <>
-                <Link to="/company/dashboard" style={styles.link}>My Jobs</Link>
-                <Link to="/company/post-job" style={styles.link}>Post Job</Link>
-              </>
+              <div className="flex items-center gap-6 mr-4">
+                <Link to="/company/dashboard" className="text-sm font-semibold text-primary/80 hover:text-accent transition-colors">My Jobs</Link>
+                <Link to="/company/post-job" className="text-sm font-semibold text-primary/80 hover:text-accent transition-colors">Post Job</Link>
+              </div>
             )}
 
-            <Link to="/profile" style={styles.link}>Profile</Link>
-            <button onClick={handleLogout} style={styles.logoutButton}>Sign out</button>
+            <div className="h-6 w-px bg-black/10"></div>
+
+            <Link to="/profile" className="flex items-center gap-2 text-sm font-semibold text-primary hover:text-accent transition-colors">
+              <div className="w-8 h-8 rounded-full bg-background border border-black/5 flex items-center justify-center">
+                <User size={16} className="text-primary/70" />
+              </div>
+              <span className="hidden sm:inline-block">Profile</span>
+            </Link>
+            <button 
+              onClick={handleLogout} 
+              className="flex items-center gap-2 text-sm font-semibold text-primary/70 hover:text-red-500 transition-colors"
+            >
+              <LogOut size={16} />
+              <span className="hidden sm:inline-block">Sign out</span>
+            </button>
           </>
         ) : (
           <>
-            <Link to="/login" style={styles.link}>Sign in</Link>
-            <Link to="/register" style={styles.primaryButton}>Join now</Link>
+            <Link to="/login" className="text-sm font-semibold text-primary/80 hover:text-primary transition-colors">Sign in</Link>
+            <Link to="/register" className="inline-flex items-center justify-center px-5 py-2 rounded-xl text-sm font-semibold bg-primary text-white hover:bg-primary-dark transition-all duration-200 shadow-sm hover:shadow-md">
+              Join now
+            </Link>
           </>
         )}
       </div>
     </nav>
   );
-};
-
-const styles = {
-  navbar: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "0 24px",
-    height: "52px",
-    backgroundColor: "#ffffff",
-    borderBottom: "1px solid #e1e3eb",
-    position: "sticky",
-    top: 0,
-    zIndex: 1000,
-  },
-  logo: {
-    textDecoration: "none",
-    color: "#0a66c2",
-    fontSize: "20px",
-    fontWeight: "700",
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-  },
-  links: {
-    display: "flex",
-    gap: "32px",
-    alignItems: "center",
-  },
-  link: {
-    textDecoration: "none",
-    color: "#191919",
-    fontSize: "14px",
-    fontWeight: "600",
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-    transition: "color 0.15s ease",
-  },
-  logoutButton: {
-    padding: "6px 16px",
-    backgroundColor: "transparent",
-    color: "#191919",
-    border: "1px solid #e1e3eb",
-    borderRadius: "24px",
-    fontSize: "14px",
-    cursor: "pointer",
-    fontWeight: "600",
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-    transition: "background-color 0.15s ease",
-  },
-  primaryButton: {
-    padding: "6px 16px",
-    backgroundColor: "#0a66c2",
-    color: "#ffffff",
-    border: "none",
-    borderRadius: "24px",
-    fontSize: "14px",
-    cursor: "pointer",
-    fontWeight: "600",
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-    textDecoration: "none",
-    transition: "background-color 0.15s ease",
-  },
 };
 
 export default Navbar;

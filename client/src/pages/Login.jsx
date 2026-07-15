@@ -1,196 +1,119 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { ArrowRight, Briefcase } from "lucide-react";
 import api from "../services/api";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
-import Card from "../components/ui/Card";
-import Container from "../components/ui/Container";
 
 const Login = () => {
   const navigate = useNavigate();
-
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
-
     try {
       const response = await api.post("/auth/login", formData);
       const { token, user } = response.data;
-
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
-
-      if (user.role === "jobseeker") {
-        navigate("/jobseeker/dashboard");
-      } else {
-        navigate("/company/dashboard");
-      }
+      navigate(user.role === "jobseeker" ? "/jobseeker/dashboard" : "/company/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong");
+      setError(err.response?.data?.message || "Invalid credentials. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={styles.container}>
-      <Container>
-        <div style={styles.content}>
-          <div style={styles.leftPanel}>
-            <h1 style={styles.title}>Sign in</h1>
-            <p style={styles.subtitle}>Stay updated on your professional world</p>
+    <div className="min-h-[calc(100vh-64px)] flex bg-background">
+      <div className="flex-1 flex flex-col justify-center px-6 py-12 lg:px-20 xl:px-32">
+        <div className="mx-auto w-full max-w-sm">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+            <h1 className="text-3xl font-bold tracking-tight text-primary mb-2">Welcome back</h1>
+            <p className="text-primary/60 text-sm mb-8">Enter your credentials to access your account.</p>
 
-            {error && <div style={styles.error}>{error}</div>}
+            {error && (
+              <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-medium">
+                {error}
+              </div>
+            )}
 
-            <form style={styles.form} onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="space-y-4">
               <Input
-                label="Email or phone"
+                label="Email address"
                 type="email"
                 name="email"
-                placeholder=""
+                placeholder="name@example.com"
                 value={formData.email}
                 onChange={handleChange}
                 required
               />
-
-              <Input
-                label="Password"
-                type="password"
-                name="password"
-                placeholder="6+ characters"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
-
-              <div style={styles.forgotPassword}>
-                <Link to="/forgot-password" style={styles.forgotLink}>Forgot password?</Link>
+              <div>
+                <Input
+                  label="Password"
+                  type="password"
+                  name="password"
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                />
+                <div className="flex justify-end -mt-2 mb-4">
+                  <Link to="/forgot-password" className="text-sm font-semibold text-accent hover:text-accent-light transition-colors">
+                    Forgot password?
+                  </Link>
+                </div>
               </div>
 
-              <Button type="submit" disabled={loading} style={styles.button}>
+              <Button type="submit" disabled={loading} className="w-full py-3 mt-2">
                 {loading ? "Signing in..." : "Sign in"}
               </Button>
             </form>
-          </div>
 
-          <div style={styles.rightPanel}>
-            <div style={styles.rightContent}>
-              <h2 style={styles.rightTitle}>New to <span style={{color: '#007bff'}}>CareerPoint</span> ?</h2>
-              <p style={styles.rightText}>
-                Discover new opportunities, connect with professionals, and advance your career.
+            <div className="mt-8 text-center">
+              <p className="text-sm text-primary/60">
+                Don't have an account?{" "}
+                <Link to="/register" className="font-semibold text-primary hover:text-accent transition-colors">
+                  Create one now
+                </Link>
               </p>
-              <Link to="/register">
-                <Button variant="outline" style={styles.rightButton}>
-                  Join now
-                </Button>
-              </Link>
             </div>
+          </motion.div>
+        </div>
+      </div>
+      
+      {/* Right side decorative panel */}
+      <div className="hidden lg:flex flex-1 bg-primary relative overflow-hidden items-center justify-center">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-dark via-primary to-secondary/80 mix-blend-multiply" />
+        <div className="absolute top-[-10%] right-[-10%] w-[40rem] h-[40rem] rounded-full bg-accent/20 blur-[100px]" />
+        
+        <div className="relative z-10 max-w-md text-white p-12">
+          <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-8 backdrop-blur-md border border-white/20">
+            <Briefcase size={24} className="text-accent-light" />
+          </div>
+          <h2 className="text-4xl font-bold tracking-tight mb-6">Discover your next big opportunity.</h2>
+          <p className="text-lg text-white/70 leading-relaxed mb-10">
+            Join a network of ambitious professionals and forward-thinking companies. Your career growth starts here.
+          </p>
+          <div className="flex items-center gap-4 text-sm font-medium text-white/50">
+            <div className="flex -space-x-3">
+              <div className="w-8 h-8 rounded-full bg-white/20 border-2 border-primary"></div>
+              <div className="w-8 h-8 rounded-full bg-white/30 border-2 border-primary"></div>
+              <div className="w-8 h-8 rounded-full bg-white/40 border-2 border-primary"></div>
+            </div>
+            <p>Join 10,000+ users</p>
           </div>
         </div>
-      </Container>
+      </div>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    minHeight: "calc(100vh - 52px)",
-    backgroundColor: "#ffffff",
-    display: "flex",
-    alignItems: "center",
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-  },
-  content: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "0",
-    maxWidth: "1128px",
-    margin: "0 auto",
-    width: "100%",
-    minHeight: "600px",
-  },
-  leftPanel: {
-    padding: "48px",
-    display: "flex",
-    flexDirection: "column",
-  },
-  title: {
-    fontSize: "32px",
-    fontWeight: "700",
-    marginBottom: "8px",
-    color: "#191919",
-  },
-  subtitle: {
-    fontSize: "16px",
-    marginBottom: "32px",
-    color: "#666666",
-  },
-  error: {
-    backgroundColor: "#fde8e8",
-    color: "#c53030",
-    padding: "12px 16px",
-    borderRadius: "4px",
-    marginBottom: "24px",
-    fontSize: "14px",
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-  },
-  forgotPassword: {
-    textAlign: "right",
-    marginBottom: "24px",
-  },
-  forgotLink: {
-    color: "#0a66c2",
-    textDecoration: "none",
-    fontSize: "14px",
-    fontWeight: "600",
-  },
-  button: {
-    width: "100%",
-  },
-  rightPanel: {
-    backgroundColor: "#f3f2ef",
-    padding: "48px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  rightContent: {
-    maxWidth: "400px",
-  },
-  rightTitle: {
-    fontSize: "32px",
-    fontWeight: "700",
-    marginBottom: "16px",
-    color: "#191919",
-  },
-  rightText: {
-    fontSize: "16px",
-    marginBottom: "32px",
-    color: "#666666",
-    lineHeight: "1.6",
-  },
-  rightButton: {
-    width: "100%",
-  },
 };
 
 export default Login;

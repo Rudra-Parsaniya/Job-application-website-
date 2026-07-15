@@ -1,103 +1,102 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Target } from "lucide-react";
 import api from "../services/api";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
-import Card from "../components/ui/Card";
-import Container from "../components/ui/Container";
 
 const Register = () => {
   const navigate = useNavigate();
-
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    role: "jobseeker",
-  });
-
+  const [formData, setFormData] = useState({ name: "", lastName: "", email: "", password: "", role: "jobseeker" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
-
     try {
       await api.post("/auth/register", formData);
       navigate("/login");
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong");
+      setError(err.response?.data?.message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={styles.container}>
-      <Container>
-        <div style={styles.content}>
-          <div style={styles.leftPanel}>
-            <h1 style={styles.title}>Join CareerPoint</h1>
-            <p style={styles.subtitle}>Create your account and start your journey</p>
+    <div className="min-h-[calc(100vh-64px)] flex bg-background">
+      <div className="flex-1 flex flex-col justify-center px-6 py-12 lg:px-20 xl:px-32">
+        <div className="mx-auto w-full max-w-sm">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+            <h1 className="text-3xl font-bold tracking-tight text-primary mb-2">Create an account</h1>
+            <p className="text-primary/60 text-sm mb-8">Join CareerPoint to discover opportunities or hire top talent.</p>
 
-            {error && <div style={styles.error}>{error}</div>}
+            {error && (
+              <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-medium">
+                {error}
+              </div>
+            )}
 
-            <form style={styles.form} onSubmit={handleSubmit}>
-              <div style={styles.roleSelector}>
-                <label style={styles.roleLabel}>I want to:</label>
-                <div style={styles.roleButtons}>
-                  <button
-                    type="button"
-                    style={formData.role === "jobseeker" ? styles.roleButtonActive : styles.roleButton}
-                    onClick={() => setFormData({ ...formData, role: "jobseeker" })}
-                  >
-                    Find a job
-                  </button>
-                  <button
-                    type="button"
-                    style={formData.role === "company" ? styles.roleButtonActive : styles.roleButton}
-                    onClick={() => setFormData({ ...formData, role: "company" })}
-                  >
-                    Hire talent
-                  </button>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="bg-white/50 p-1.5 rounded-xl border border-black/5 flex items-center mb-6">
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, role: "jobseeker" })}
+                  className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
+                    formData.role === "jobseeker" 
+                      ? "bg-white text-primary shadow-sm ring-1 ring-black/5" 
+                      : "text-primary/50 hover:text-primary"
+                  }`}
+                >
+                  I want to find a job
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, role: "company" })}
+                  className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
+                    formData.role === "company" 
+                      ? "bg-white text-primary shadow-sm ring-1 ring-black/5" 
+                      : "text-primary/50 hover:text-primary"
+                  }`}
+                >
+                  I want to hire talent
+                </button>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <Input
+                    label={formData.role === "company" ? "Company name" : "First name"}
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                  />
                 </div>
+                {formData.role === "jobseeker" && (
+                  <div className="flex-1">
+                    <Input
+                      label="Last name"
+                      type="text"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                )}
               </div>
 
               <Input
-                label={formData.role === "company" ? "Company name" : "First name"}
-                type="text"
-                name="name"
-                placeholder=""
-                value={formData.name}
-                onChange={handleChange}
-                required
-              />
-
-              <Input
-                label="Last name"
-                type="text"
-                name="lastName"
-                placeholder=""
-                value={formData.lastName || ""}
-                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                required={formData.role === "jobseeker"}
-                style={{ display: formData.role === "company" ? "none" : "block" }}
-              />
-
-              <Input
-                label="Email"
+                label="Email address"
                 type="email"
                 name="email"
-                placeholder=""
                 value={formData.email}
                 onChange={handleChange}
                 required
@@ -107,206 +106,59 @@ const Register = () => {
                 label="Password (6+ characters)"
                 type="password"
                 name="password"
-                placeholder=""
                 value={formData.password}
                 onChange={handleChange}
                 required
               />
 
-              <p style={styles.agreement}>
-                By clicking Agree & Join, you agree to the CareerPoint{" "}
-                <Link to="#" style={styles.link}>User Agreement</Link>,{" "}
-                <Link to="#" style={styles.link}>Privacy Policy</Link>, and{" "}
-                <Link to="#" style={styles.link}>Cookie Policy</Link>.
+              <p className="text-xs text-primary/50 leading-relaxed mt-4">
+                By clicking "Agree & Join", you agree to the CareerPoint{" "}
+                <Link to="#" className="font-semibold text-primary hover:text-accent">Terms</Link> and{" "}
+                <Link to="#" className="font-semibold text-primary hover:text-accent">Privacy Policy</Link>.
               </p>
 
-              <Button type="submit" disabled={loading} style={styles.button}>
+              <Button type="submit" disabled={loading} className="w-full py-3 mt-4">
                 {loading ? "Creating account..." : "Agree & Join"}
               </Button>
             </form>
 
-            <div style={styles.footer}>
-              <p style={styles.footerText}>
-                Already on CareerPoint? <Link to="/login" style={styles.link}>Sign in</Link>
+            <div className="mt-8 text-center">
+              <p className="text-sm text-primary/60">
+                Already have an account?{" "}
+                <Link to="/login" className="font-semibold text-primary hover:text-accent transition-colors">
+                  Sign in
+                </Link>
               </p>
             </div>
-          </div>
-
-          <div style={styles.rightPanel}>
-            <div style={styles.rightContent}>
-              <h2 style={styles.rightTitle}>Search for jobs</h2>
-              <p style={styles.rightText}>
-                Explore thousands of job opportunities from top companies worldwide.
-              </p>
-              <div style={styles.benefits}>
-                <div style={styles.benefit}>
-                  <span style={styles.bullet}>•</span>
-                  <span style={styles.benefitText}>Advanced job search filters</span>
-                </div>
-                <div style={styles.benefit}>
-                  <span style={styles.bullet}>•</span>
-                  <span style={styles.benefitText}>Personalized job recommendations</span>
-                </div>
-                <div style={styles.benefit}>
-                  <span style={styles.bullet}>•</span>
-                  <span style={styles.benefitText}>Application tracking dashboard</span>
-                </div>
-                <div style={styles.benefit}>
-                  <span style={styles.bullet}>•</span>
-                  <span style={styles.benefitText}>Direct messaging with employers</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          </motion.div>
         </div>
-      </Container>
+      </div>
+      
+      {/* Right side decorative panel */}
+      <div className="hidden lg:flex flex-1 bg-secondary relative overflow-hidden items-center justify-center">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-secondary to-accent/80 mix-blend-multiply" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[40rem] h-[40rem] rounded-full bg-soft/20 blur-[100px]" />
+        
+        <div className="relative z-10 max-w-md text-white p-12">
+          <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-8 backdrop-blur-md border border-white/20">
+            <Target size={24} className="text-white" />
+          </div>
+          <h2 className="text-4xl font-bold tracking-tight mb-6">Target your next big move.</h2>
+          <p className="text-lg text-white/70 leading-relaxed mb-8">
+            Whether you are looking for your dream job or the perfect candidate, we provide the smart tools to help you succeed.
+          </p>
+          <ul className="space-y-4">
+            {["Smart matching algorithms", "Application tracking tools", "Direct messaging system"].map((item, i) => (
+              <li key={i} className="flex items-center gap-3 text-white/80">
+                <div className="w-1.5 h-1.5 rounded-full bg-accent-light" />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    minHeight: "calc(100vh - 52px)",
-    backgroundColor: "#ffffff",
-    display: "flex",
-    alignItems: "center",
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-  },
-  content: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "0",
-    maxWidth: "1128px",
-    margin: "0 auto",
-    width: "100%",
-    minHeight: "600px",
-  },
-  leftPanel: {
-    padding: "48px",
-    display: "flex",
-    flexDirection: "column",
-  },
-  title: {
-    fontSize: "32px",
-    fontWeight: "700",
-    marginBottom: "8px",
-    color: "#191919",
-  },
-  subtitle: {
-    fontSize: "16px",
-    marginBottom: "32px",
-    color: "#666666",
-  },
-  error: {
-    backgroundColor: "#fde8e8",
-    color: "#c53030",
-    padding: "12px 16px",
-    borderRadius: "4px",
-    marginBottom: "24px",
-    fontSize: "14px",
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-  },
-  roleSelector: {
-    marginBottom: "24px",
-  },
-  roleLabel: {
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "#191919",
-    marginBottom: "8px",
-    display: "block",
-  },
-  roleButtons: {
-    display: "flex",
-    gap: "12px",
-  },
-  roleButton: {
-    flex: 1,
-    padding: "8px 16px",
-    borderRadius: "4px",
-    border: "1px solid #e1e3eb",
-    backgroundColor: "#ffffff",
-    color: "#666666",
-    fontSize: "14px",
-    fontWeight: "600",
-    cursor: "pointer",
-    transition: "background-color 0.15s ease",
-  },
-  roleButtonActive: {
-    flex: 1,
-    padding: "8px 16px",
-    borderRadius: "4px",
-    border: "2px solid #0a66c2",
-    backgroundColor: "#ffffff",
-    color: "#0a66c2",
-    fontSize: "14px",
-    fontWeight: "600",
-    cursor: "pointer",
-  },
-  agreement: {
-    fontSize: "12px",
-    color: "#666666",
-    marginBottom: "24px",
-    lineHeight: "1.5",
-  },
-  button: {
-    width: "100%",
-  },
-  footer: {
-    marginTop: "24px",
-  },
-  footerText: {
-    fontSize: "14px",
-    color: "#666666",
-  },
-  link: {
-    color: "#0a66c2",
-    textDecoration: "none",
-    fontWeight: "600",
-  },
-  rightPanel: {
-    backgroundColor: "#f3f2ef",
-    padding: "48px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  rightContent: {
-    maxWidth: "400px",
-  },
-  rightTitle: {
-    fontSize: "32px",
-    fontWeight: "700",
-    marginBottom: "16px",
-    color: "#191919",
-  },
-  rightText: {
-    fontSize: "16px",
-    marginBottom: "32px",
-    color: "#666666",
-    lineHeight: "1.6",
-  },
-  benefits: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-  },
-  benefit: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-  },
-  bullet: {
-    fontSize: "20px",
-    color: "#0a66c2",
-  },
-  benefitText: {
-    fontSize: "14px",
-    color: "#666666",
-  },
 };
 
 export default Register;

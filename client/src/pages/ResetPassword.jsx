@@ -1,6 +1,10 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { LockKeyhole } from "lucide-react";
 import api from "../services/api";
+import Button from "../components/ui/Button";
+import Input from "../components/ui/Input";
 
 const ResetPassword = () => {
   const { token } = useParams();
@@ -31,114 +35,73 @@ const ResetPassword = () => {
         navigate("/login");
       }, 2000);
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong");
+      setError(err.response?.data?.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={styles.container}>
-      <form style={styles.form} onSubmit={handleSubmit}>
-        <h2 style={styles.title}>Reset Password</h2>
-        <p style={styles.subtitle}>Enter your new password</p>
+    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center bg-background px-6 py-12">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }} 
+        animate={{ opacity: 1, scale: 1 }} 
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-md p-8 md:p-10 rounded-3xl bg-white shadow-soft border border-black/5"
+      >
+        <div className="w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+          <LockKeyhole size={24} className="text-primary" />
+        </div>
+        
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold tracking-tight text-primary mb-2">Reset Password</h2>
+          <p className="text-primary/60 text-sm">Enter your new password below.</p>
+        </div>
 
-        {error && <p style={styles.error}>{error}</p>}
-        {message && <p style={styles.message}>{message}</p>}
+        {error && (
+          <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-medium text-center">
+            {error}
+          </div>
+        )}
+        
+        {message && (
+          <div className="mb-6 p-4 rounded-xl bg-green-50 border border-green-100 text-green-700 text-sm font-medium text-center">
+            {message}
+          </div>
+        )}
 
-        <input
-          type="password"
-          placeholder="New Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={styles.input}
-          required
-        />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Input
+            label="New Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            placeholder="••••••••"
+          />
 
-        <input
-          type="password"
-          placeholder="Confirm New Password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          style={styles.input}
-          required
-        />
+          <Input
+            label="Confirm New Password"
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            placeholder="••••••••"
+          />
 
-        <button type="submit" style={styles.button} disabled={loading}>
-          {loading ? "Resetting..." : "Reset Password"}
-        </button>
+          <Button type="submit" disabled={loading} className="w-full py-3 mt-4">
+            {loading ? "Resetting..." : "Reset Password"}
+          </Button>
 
-        <p style={styles.linkText}>
-          <Link to="/login">Back to Login</Link>
-        </p>
-      </form>
+          <div className="text-center mt-6">
+            <Link to="/login" className="text-sm font-semibold text-primary/60 hover:text-primary transition-colors">
+              Back to login
+            </Link>
+          </div>
+        </form>
+      </motion.div>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    minHeight: "calc(100vh - 60px)",
-    backgroundColor: "#f8fafc",
-    fontFamily: "Arial, sans-serif",
-  },
-  form: {
-    backgroundColor: "#fff",
-    padding: "40px",
-    borderRadius: "10px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-    width: "350px",
-    display: "flex",
-    flexDirection: "column",
-  },
-  title: {
-    textAlign: "center",
-    marginBottom: "10px",
-    color: "#1e293b",
-  },
-  subtitle: {
-    textAlign: "center",
-    marginBottom: "20px",
-    color: "#64748b",
-    fontSize: "0.9rem",
-  },
-  input: {
-    padding: "10px",
-    marginBottom: "15px",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
-    fontSize: "1rem",
-  },
-  button: {
-    padding: "12px",
-    backgroundColor: "#2563eb",
-    color: "#fff",
-    border: "none",
-    borderRadius: "6px",
-    fontSize: "1rem",
-    cursor: "pointer",
-    fontWeight: "600",
-  },
-  error: {
-    color: "#dc2626",
-    fontSize: "0.9rem",
-    marginBottom: "10px",
-    textAlign: "center",
-  },
-  message: {
-    color: "#16a34a",
-    fontSize: "0.9rem",
-    marginBottom: "10px",
-    textAlign: "center",
-  },
-  linkText: {
-    textAlign: "center",
-    marginTop: "15px",
-    fontSize: "0.9rem",
-  },
 };
 
 export default ResetPassword;

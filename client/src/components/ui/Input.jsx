@@ -1,46 +1,41 @@
-const Input = ({ label, type = "text", placeholder, value, onChange, required = false, style, ...props }) => {
-  const containerStyle = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "4px",
-    marginBottom: "16px",
-  };
+import { forwardRef } from "react";
+import { AlertCircle } from "lucide-react";
 
-  const labelStyle = {
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "#191919",
-  };
-
-  const inputStyle = {
-    padding: "8px 12px",
-    borderRadius: "4px",
-    border: "1px solid #e1e3eb",
-    fontSize: "14px",
-    transition: "border-color 0.15s ease, box-shadow 0.15s ease",
-    outline: "none",
-    fontFamily: "inherit",
-    ":focus": {
-      borderColor: "#0a66c2",
-      boxShadow: "0 0 0 2px rgba(10, 102, 194, 0.1)",
-    },
-    ...style,
-  };
-
+const Input = forwardRef(({ label, type = "text", placeholder, value, onChange, error, required = false, className = "", ...props }, ref) => {
   return (
-    <div style={containerStyle}>
-      {label && <label style={labelStyle}>{label}</label>}
-      <input
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        required={required}
-        style={inputStyle}
-        {...props}
-      />
+    <div className="flex flex-col gap-1.5 mb-4 w-full">
+      {label && (
+        <label className="text-[13px] font-semibold text-primary/80 ml-0.5">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+      )}
+      <div className="relative">
+        <input
+          ref={ref}
+          type={type}
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          required={required}
+          className={`w-full px-4 py-2.5 rounded-xl border bg-white/50 text-[14px] text-primary transition-all duration-200 outline-none
+            ${error 
+              ? 'border-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-500/10' 
+              : 'border-black/10 focus:border-accent focus:ring-4 focus:ring-accent/10 hover:border-black/20'
+            }
+            ${className}`}
+          {...props}
+        />
+        {error && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500">
+            <AlertCircle size={16} />
+          </div>
+        )}
+      </div>
+      {error && <span className="text-xs text-red-500 ml-0.5 mt-0.5 font-medium">{error}</span>}
     </div>
   );
-};
+});
+
+Input.displayName = "Input";
 
 export default Input;
