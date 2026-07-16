@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { AlertCircle, CheckCircle2, User, Building, Phone, Code, Link as LinkIcon, Trash2 } from "lucide-react";
 import api from "../services/api";
+import DashboardLayout from "../components/layout/DashboardLayout";
+import Card from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import Input from "../components/ui/Input";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -8,6 +13,8 @@ const Profile = () => {
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const fetchProfile = async () => {
     setLoading(true);
@@ -17,6 +24,7 @@ const Profile = () => {
       setFormData(response.data.user);
     } catch (err) {
       console.log(err);
+      setError("Failed to load profile.");
     } finally {
       setLoading(false);
     }
@@ -33,13 +41,18 @@ const Profile = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
     setMessage("");
+    setError("");
+    setSaving(true);
     try {
       const response = await api.put("/users/me", formData);
       setProfile(response.data.user);
       localStorage.setItem("user", JSON.stringify(response.data.user));
       setMessage("Profile updated successfully");
+      setTimeout(() => setMessage(""), 3000);
     } catch (err) {
-      setMessage(err.response?.data?.message || "Update failed");
+      setError(err.response?.data?.message || "Update failed");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -55,171 +68,185 @@ const Profile = () => {
       localStorage.removeItem("user");
       navigate("/");
     } catch (err) {
-      setMessage(err.response?.data?.message || "Delete failed");
+      setError(err.response?.data?.message || "Delete failed");
     }
   };
 
-  if (loading) return <p style={styles.container}>Loading...</p>;
-  if (!profile) return <p style={styles.container}>Could not load profile.</p>;
+  if (loading) {
+    return (
+      <DashboardLayout role="jobseeker">
+        <div className="flex justify-center items-center h-64">
+          <p className="text-primary/60 font-medium animate-pulse">Loading profile...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <DashboardLayout role="jobseeker">
+        <div className="flex justify-center items-center h-64 text-red-500 font-semibold">
+          Could not load profile.
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
-    <div style={styles.container}>
-      <form style={styles.form} onSubmit={handleUpdate}>
-        <h2>My Profile</h2>
+    <DashboardLayout role={profile.role}>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-primary mb-2 tracking-tight">My Profile</h1>
+        <p className="text-primary/60">
+          Update your personal details and account settings.
+        </p>
+      </div>
 
-        {message && <p style={styles.message}>{message}</p>}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+          <Card className="p-8">
+            <form onSubmit={handleUpdate} className="space-y-6">
+              {message && (
+                <div className="p-4 bg-green-50 border border-green-100 rounded-xl flex items-start gap-3">
+                  <CheckCircle2 className="text-green-500 shrink-0 mt-0.5" size={18} />
+                  <p className="text-sm font-semibold text-green-700">{message}</p>
+                </div>
+              )}
 
-        <label style={styles.label}>Email (cannot be changed)</label>
-        <input type="email" value={profile.email} disabled style={styles.inputDisabled} />
+              {error && (
+                <div className="p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3">
+                  <AlertCircle className="text-red-500 shrink-0 mt-0.5" size={18} />
+                  <p className="text-sm font-semibold text-red-700">{error}</p>
+                </div>
+              )}
 
-        <label style={styles.label}>
-          {profile.role === "company" ? "Company Name" : "Full Name"}
-        </label>
-        <input
-          type="text"
-          name="name"
-          value={formData.name || ""}
-          onChange={handleChange}
-          style={styles.input}
-        />
+              <div className="space-y-4">
+                <Input
+                  label="Email (cannot be changed)"
+                  type="email"
+                  value={profile.email}
+                  disabled
+                  className="bg-black/5 opacity-70 cursor-not-allowed"
+                />
 
-        <label style={styles.label}>Phone</label>
-        <input
-          type="text"
-          name="phone"
-          value={formData.phone || ""}
-          onChange={handleChange}
-          style={styles.input}
-        />
+                <Input
+                  label={profile.role === "company" ? "Company Name" : "Full Name"}
+                  name="name"
+                  value={formData.name || ""}
+                  onChange={handleChange}
+                  required
+                />
 
-        <label style={styles.label}>Bio / About</label>
-        <textarea
-          name="bio"
-          value={formData.bio || ""}
-          onChange={handleChange}
-          style={styles.textarea}
-        />
+                <Input
+                  label="Phone Number"
+                  name="phone"
+                  value={formData.phone || ""}
+                  onChange={handleChange}
+                />
 
-        {profile.role === "jobseeker" && (
-          <>
-            <label style={styles.label}>Skills</label>
-            <input
-              type="text"
-              name="skills"
-              placeholder="e.g. React, Node.js, MongoDB"
-              value={formData.skills || ""}
-              onChange={handleChange}
-              style={styles.input}
-            />
+                <div className="flex flex-col gap-1.5 w-full">
+                  <label className="text-[13px] font-semibold text-primary/80 ml-0.5">
+                    Bio / About
+                  </label>
+                  <textarea
+                    name="bio"
+                    placeholder="Tell us about yourself..."
+                    value={formData.bio || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-xl border border-black/10 bg-white/50 text-[14px] text-primary transition-all duration-200 outline-none focus:border-accent focus:ring-4 focus:ring-accent/10 hover:border-black/20 min-h-[100px] resize-y"
+                  />
+                </div>
 
-            <label style={styles.label}>Resume Link</label>
-            <input
-              type="text"
-              name="resumeLink"
-              placeholder="https://..."
-              value={formData.resumeLink || ""}
-              onChange={handleChange}
-              style={styles.input}
-            />
-          </>
-        )}
+                {profile.role === "jobseeker" && (
+                  <>
+                    <Input
+                      label="Skills"
+                      name="skills"
+                      placeholder="e.g. React, Node.js, MongoDB"
+                      value={formData.skills || ""}
+                      onChange={handleChange}
+                    />
+                    <Input
+                      label="Resume Link"
+                      name="resumeLink"
+                      placeholder="https://your-resume-link.com"
+                      value={formData.resumeLink || ""}
+                      onChange={handleChange}
+                    />
+                  </>
+                )}
 
-        {profile.role === "company" && (
-          <>
-            <label style={styles.label}>Company Website</label>
-            <input
-              type="text"
-              name="companyWebsite"
-              placeholder="https://..."
-              value={formData.companyWebsite || ""}
-              onChange={handleChange}
-              style={styles.input}
-            />
+                {profile.role === "company" && (
+                  <>
+                    <Input
+                      label="Company Website"
+                      name="companyWebsite"
+                      placeholder="https://..."
+                      value={formData.companyWebsite || ""}
+                      onChange={handleChange}
+                    />
+                    <Input
+                      label="Industry"
+                      name="industry"
+                      placeholder="e.g. IT Services, Healthcare"
+                      value={formData.industry || ""}
+                      onChange={handleChange}
+                    />
+                  </>
+                )}
+              </div>
 
-            <label style={styles.label}>Industry</label>
-            <input
-              type="text"
-              name="industry"
-              placeholder="e.g. IT Services"
-              value={formData.industry || ""}
-              onChange={handleChange}
-              style={styles.input}
-            />
-          </>
-        )}
+              <div className="pt-4 border-t border-black/5 flex justify-end">
+                <Button 
+                  type="submit" 
+                  disabled={saving}
+                  className="px-8 py-3 w-full md:w-auto flex items-center justify-center gap-2"
+                >
+                  {saving ? (
+                    "Saving..."
+                  ) : (
+                    <>
+                      <CheckCircle2 size={18} />
+                      Save Changes
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </div>
 
-        <button type="submit" style={styles.button}>Save Changes</button>
-        <button type="button" onClick={handleDelete} style={styles.deleteButton}>
-          Delete Account
-        </button>
-      </form>
-    </div>
+        <div className="space-y-6">
+          <Card className="p-6 text-center">
+            <div className="w-24 h-24 mx-auto bg-accent/10 text-accent rounded-full flex items-center justify-center mb-4">
+              {profile.role === "company" ? <Building size={40} /> : <User size={40} />}
+            </div>
+            <h3 className="text-xl font-bold text-primary mb-1">{profile.name}</h3>
+            <p className="text-sm font-semibold text-primary/40 uppercase tracking-wider mb-4">
+              {profile.role}
+            </p>
+            <div className="text-sm text-primary/60">
+              Joined {new Date(profile.createdAt).toLocaleDateString()}
+            </div>
+          </Card>
+
+          <Card className="p-6 border-red-100 bg-red-50/50">
+            <h3 className="text-lg font-bold text-red-600 mb-2">Danger Zone</h3>
+            <p className="text-sm text-red-600/70 mb-4">
+              Once you delete your account, there is no going back. Please be certain.
+            </p>
+            <Button 
+              variant="danger" 
+              onClick={handleDelete}
+              className="w-full flex items-center justify-center gap-2 py-3"
+            >
+              <Trash2 size={16} />
+              Delete Account
+            </Button>
+          </Card>
+        </div>
+      </div>
+    </DashboardLayout>
   );
-};
-
-const styles = {
-  container: {
-    padding: "40px",
-    fontFamily: "Arial, sans-serif",
-  },
-  form: {
-    backgroundColor: "#fff",
-    padding: "30px",
-    borderRadius: "10px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-    maxWidth: "500px",
-    margin: "0 auto",
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-  },
-  label: {
-    fontSize: "0.85rem",
-    color: "#475569",
-    marginTop: "5px",
-  },
-  input: {
-    padding: "10px",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
-  },
-  inputDisabled: {
-    padding: "10px",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
-    backgroundColor: "#f1f5f9",
-    color: "#64748b",
-  },
-  textarea: {
-    padding: "10px",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
-    minHeight: "60px",
-  },
-  button: {
-    padding: "12px",
-    backgroundColor: "#2563eb",
-    color: "#fff",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontWeight: "600",
-    marginTop: "10px",
-  },
-  deleteButton: {
-    padding: "12px",
-    backgroundColor: "#fff",
-    color: "#dc2626",
-    border: "1px solid #dc2626",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontWeight: "600",
-  },
-  message: {
-    color: "#16a34a",
-    fontWeight: "600",
-    textAlign: "center",
-  },
 };
 
 export default Profile;

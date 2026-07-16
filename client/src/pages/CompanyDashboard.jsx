@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Briefcase, MapPin, Edit, Trash2, Users } from "lucide-react";
 import api from "../services/api";
-import Container from "../components/ui/Container";
-import Button from "../components/ui/Button";
+import DashboardLayout from "../components/layout/DashboardLayout";
 import Card from "../components/ui/Card";
+import Button from "../components/ui/Button";
 
 const CompanyDashboard = () => {
   const [jobs, setJobs] = useState([]);
@@ -38,105 +40,101 @@ const CompanyDashboard = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <Container>
-        <div style={styles.header}>
-          <h2 style={styles.title}>My Posted Jobs</h2>
+    <DashboardLayout role="company">
+      <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-primary mb-2 tracking-tight">My Posted Jobs</h1>
+          <p className="text-primary/60">
+            Manage your job listings and review applicants.
+          </p>
+        </div>
+        <Link to="/company/post-job">
+          <Button className="px-6 py-2.5">
+            + Post New Job
+          </Button>
+        </Link>
+      </div>
+
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="p-6 h-48 animate-pulse">
+              <div className="w-2/3 h-6 bg-black/5 rounded-md mb-4" />
+              <div className="w-full h-4 bg-black/5 rounded-md mb-2" />
+              <div className="w-3/4 h-4 bg-black/5 rounded-md" />
+            </Card>
+          ))}
+        </div>
+      ) : jobs.length === 0 ? (
+        <div className="text-center py-24 bg-white rounded-3xl border border-black/5 shadow-sm">
+          <div className="w-20 h-20 bg-black/5 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Briefcase size={32} className="text-primary/40" />
+          </div>
+          <h3 className="text-2xl font-bold text-primary mb-3">No jobs posted yet</h3>
+          <p className="text-primary/60 max-w-md mx-auto mb-8 leading-relaxed">
+            Start hiring top talent by posting your first job opportunity.
+          </p>
           <Link to="/company/post-job">
-            <Button>+ Post New Job</Button>
+            <Button className="px-8 py-3">Post a Job</Button>
           </Link>
         </div>
-
-        {loading ? (
-          <p style={styles.loading}>Loading...</p>
-        ) : jobs.length === 0 ? (
-          <p style={styles.noJobs}>You haven't posted any jobs yet.</p>
-        ) : (
-          <div style={styles.jobList}>
-            {jobs.map((job) => (
-              <Card key={job._id} style={styles.jobCard}>
-                <h3 style={styles.jobTitle}>{job.title}</h3>
-                <p style={styles.jobDescription}>{job.description}</p>
-                <p style={styles.jobDetails}>
-                  <strong>Location:</strong> {job.location} | <strong>Type:</strong> {job.jobType}
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {jobs.map((job, index) => (
+            <motion.div
+              key={job._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: index * 0.05 }}
+            >
+              <Card hover className="p-6 h-full flex flex-col">
+                <h3 className="text-xl font-bold text-primary leading-tight mb-2">
+                  {job.title}
+                </h3>
+                <p className="text-sm text-primary/60 line-clamp-2 mb-6">
+                  {job.description}
                 </p>
-                <div style={styles.actions}>
-                  <Link to={`/company/jobs/${job._id}/applicants`}>
-                    <Button variant="secondary">View Applicants</Button>
+
+                <div className="space-y-2.5 mb-8">
+                  <div className="flex items-center gap-2 text-sm text-primary/70">
+                    <MapPin size={16} className="text-primary/40" />
+                    <span className="truncate">{job.location}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-primary/70">
+                    <Briefcase size={16} className="text-primary/40" />
+                    <span>{job.jobType}</span>
+                  </div>
+                </div>
+
+                <div className="mt-auto grid grid-cols-2 gap-3">
+                  <Link to={`/company/jobs/${job._id}/applicants`} className="col-span-2">
+                    <Button variant="secondary" className="w-full flex items-center justify-center gap-2 py-2">
+                      <Users size={16} />
+                      View Applicants
+                    </Button>
                   </Link>
                   <Link to={`/company/jobs/${job._id}/edit`}>
-                    <Button variant="outline">Edit</Button>
+                    <Button variant="outline" className="w-full flex items-center justify-center gap-2 py-2">
+                      <Edit size={16} />
+                      Edit
+                    </Button>
                   </Link>
-                  <Button variant="danger" onClick={() => handleDelete(job._id)}>
+                  <Button 
+                    variant="danger" 
+                    onClick={() => handleDelete(job._id)}
+                    className="w-full flex items-center justify-center gap-2 py-2"
+                  >
+                    <Trash2 size={16} />
                     Delete
                   </Button>
                 </div>
               </Card>
-            ))}
-          </div>
-        )}
-      </Container>
-    </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </DashboardLayout>
   );
-};
-
-const styles = {
-  container: {
-    padding: "48px 0",
-    backgroundColor: "#ffffff",
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-  },
-  title: {
-    fontSize: "32px",
-    fontWeight: "700",
-    color: "#191919",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "32px",
-  },
-  loading: {
-    textAlign: "center",
-    color: "#666666",
-    fontSize: "16px",
-  },
-  noJobs: {
-    textAlign: "center",
-    color: "#666666",
-    fontSize: "16px",
-  },
-  jobList: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-  },
-  jobCard: {
-    padding: "24px",
-  },
-  jobTitle: {
-    fontSize: "20px",
-    fontWeight: "600",
-    marginBottom: "12px",
-    color: "#191919",
-  },
-  jobDescription: {
-    fontSize: "14px",
-    color: "#666666",
-    marginBottom: "12px",
-    lineHeight: "1.6",
-  },
-  jobDetails: {
-    fontSize: "14px",
-    color: "#666666",
-    marginBottom: "16px",
-  },
-  actions: {
-    display: "flex",
-    gap: "12px",
-    flexWrap: "wrap",
-  },
 };
 
 export default CompanyDashboard;

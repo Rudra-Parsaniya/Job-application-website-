@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
+import { Briefcase, AlertCircle, CheckCircle2, ArrowLeft } from "lucide-react";
 import api from "../services/api";
+import DashboardLayout from "../components/layout/DashboardLayout";
+import Card from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import Input from "../components/ui/Input";
 
 const EditJob = () => {
   const { jobId } = useParams();
@@ -68,143 +73,153 @@ const EditJob = () => {
     }
   };
 
-  if (fetching) return <p style={styles.container}>Loading...</p>;
+  if (fetching) {
+    return (
+      <DashboardLayout role="company">
+        <div className="flex justify-center items-center h-64">
+          <p className="text-primary/60 font-medium animate-pulse">Loading job details...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
-    <div style={styles.container}>
-      <form style={styles.form} onSubmit={handleSubmit}>
-        <Link to="/company/dashboard" style={styles.backLink}>← Back to Dashboard</Link>
-        <h2>Edit Job</h2>
+    <DashboardLayout role="company">
+      <div className="mb-6">
+        <Link 
+          to="/company/dashboard" 
+          className="inline-flex items-center gap-2 text-sm font-semibold text-primary/60 hover:text-primary transition-colors mb-4"
+        >
+          <ArrowLeft size={16} />
+          Back to Dashboard
+        </Link>
+        <h1 className="text-3xl font-bold text-primary mb-2 tracking-tight">Edit Job Listing</h1>
+        <p className="text-primary/60">
+          Update the details of your job posting.
+        </p>
+      </div>
 
-        {error && <p style={styles.error}>{error}</p>}
+      <Card className="p-8 max-w-2xl">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {error && (
+            <div className="p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3">
+              <AlertCircle className="text-red-500 shrink-0 mt-0.5" size={18} />
+              <p className="text-sm font-semibold text-red-700">{error}</p>
+            </div>
+          )}
 
-        <input
-          type="text"
-          name="title"
-          placeholder="Job Title"
-          value={formData.title}
-          onChange={handleChange}
-          style={styles.input}
-          required
-        />
+          <div className="space-y-4">
+            <Input
+              label="Job Title"
+              name="title"
+              placeholder="e.g. Senior Frontend Developer"
+              value={formData.title}
+              onChange={handleChange}
+              required
+            />
 
-        <textarea
-          name="description"
-          placeholder="Job Description"
-          value={formData.description}
-          onChange={handleChange}
-          style={styles.textarea}
-          required
-        />
+            <div className="flex flex-col gap-1.5 w-full">
+              <label className="text-[13px] font-semibold text-primary/80 ml-0.5">
+                Job Description <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                name="description"
+                placeholder="Describe the role, responsibilities, and requirements..."
+                value={formData.description}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 rounded-xl border border-black/10 bg-white/50 text-[14px] text-primary transition-all duration-200 outline-none focus:border-accent focus:ring-4 focus:ring-accent/10 hover:border-black/20 min-h-[120px] resize-y"
+              />
+            </div>
 
-        <input
-          type="text"
-          name="location"
-          placeholder="Location"
-          value={formData.location}
-          onChange={handleChange}
-          style={styles.input}
-          required
-        />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Location"
+                name="location"
+                placeholder="e.g. Remote, New York"
+                value={formData.location}
+                onChange={handleChange}
+                required
+              />
 
-        <input
-          type="text"
-          name="category"
-          placeholder="Category (e.g. Software Development)"
-          value={formData.category}
-          onChange={handleChange}
-          style={styles.input}
-          required
-        />
+              <Input
+                label="Category"
+                name="category"
+                placeholder="e.g. Software Development"
+                value={formData.category}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-        <input
-          type="number"
-          name="salary"
-          placeholder="Salary"
-          value={formData.salary}
-          onChange={handleChange}
-          style={styles.input}
-          required
-        />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Salary (per year in ₹/$, numbers only)"
+                type="number"
+                name="salary"
+                placeholder="e.g. 1000000"
+                value={formData.salary}
+                onChange={handleChange}
+                required
+              />
 
-        <select name="jobType" value={formData.jobType} onChange={handleChange} style={styles.input}>
-          <option value="Full-time">Full-time</option>
-          <option value="Part-time">Part-time</option>
-          <option value="Internship">Internship</option>
-          <option value="Contract">Contract</option>
-        </select>
+              <div className="flex flex-col gap-1.5 w-full">
+                <label className="text-[13px] font-semibold text-primary/80 ml-0.5">
+                  Job Type <span className="text-red-500">*</span>
+                </label>
+                <select
+                  name="jobType"
+                  value={formData.jobType}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white/50 text-[14px] text-primary transition-all duration-200 outline-none focus:border-accent focus:ring-4 focus:ring-accent/10 hover:border-black/20 cursor-pointer appearance-none"
+                >
+                  <option value="Full-time">Full-time</option>
+                  <option value="Part-time">Part-time</option>
+                  <option value="Internship">Internship</option>
+                  <option value="Contract">Contract</option>
+                </select>
+              </div>
+            </div>
 
-        <input
-          type="text"
-          name="experienceRequired"
-          placeholder="Experience Required (e.g. 1-3 years)"
-          value={formData.experienceRequired}
-          onChange={handleChange}
-          style={styles.input}
-        />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Experience Required"
+                name="experienceRequired"
+                placeholder="e.g. 3-5 years"
+                value={formData.experienceRequired}
+                onChange={handleChange}
+              />
 
-        <input
-          type="text"
-          name="skillsRequired"
-          placeholder="Skills Required (comma separated)"
-          value={formData.skillsRequired}
-          onChange={handleChange}
-          style={styles.input}
-        />
+              <Input
+                label="Skills Required"
+                name="skillsRequired"
+                placeholder="e.g. React, Node.js, MongoDB"
+                value={formData.skillsRequired}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
 
-        <button type="submit" style={styles.button} disabled={loading}>
-          {loading ? "Saving..." : "Save Changes"}
-        </button>
-      </form>
-    </div>
+          <div className="pt-4 border-t border-black/5 flex justify-end">
+            <Button 
+              type="submit" 
+              disabled={loading}
+              className="px-8 py-3 w-full md:w-auto flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                "Saving..."
+              ) : (
+                <>
+                  <CheckCircle2 size={18} />
+                  Save Changes
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
+      </Card>
+    </DashboardLayout>
   );
-};
-
-const styles = {
-  container: {
-    padding: "40px",
-    fontFamily: "Arial, sans-serif",
-  },
-  form: {
-    backgroundColor: "#fff",
-    padding: "30px",
-    borderRadius: "10px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-    maxWidth: "500px",
-    margin: "0 auto",
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-  },
-  backLink: {
-    color: "#2563eb",
-    textDecoration: "none",
-    fontSize: "0.9rem",
-  },
-  input: {
-    padding: "10px",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
-  },
-  textarea: {
-    padding: "10px",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
-    minHeight: "80px",
-  },
-  button: {
-    padding: "12px",
-    backgroundColor: "#2563eb",
-    color: "#fff",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontWeight: "600",
-  },
-  error: {
-    color: "red",
-    textAlign: "center",
-  },
 };
 
 export default EditJob;
