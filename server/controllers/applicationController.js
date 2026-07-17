@@ -4,9 +4,9 @@ const { validateApplication } = require("../utils/validators");
 
 const applyToJob = async (req, res) => {
   try {
-    const { jobId, coverNote } = req.body;
+    const { jobId, coverNote, resume } = req.body;
 
-    const errors = validateApplication({ jobId });
+    const errors = validateApplication({ jobId, coverNote, resume });
     if (errors.length > 0) {
       return res.status(400).json({ message: errors[0] });
     }
@@ -28,7 +28,8 @@ const applyToJob = async (req, res) => {
     const newApplication = await Application.create({
       job: jobId,
       applicant: req.user.id,
-      coverNote: coverNote || "",
+      coverNote,
+      resume,
     });
 
     res.status(201).json({
@@ -100,7 +101,7 @@ const getMyApplications = async (req, res) => {
       .populate({
         path: "job",
         select: "title location salary jobType",
-        populate: { path: "postedBy", select: "name" },
+        populate: { path: "postedBy", select: "name companyLogo" },
       })
       .sort({ createdAt: -1 });
 

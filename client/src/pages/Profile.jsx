@@ -38,6 +38,22 @@ const Profile = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 500 * 1024) {
+        setError("Image size should be less than 500KB");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, companyLogo: reader.result });
+        setError(""); // clear error if successful
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleUpdate = async (e) => {
     e.preventDefault();
     setMessage("");
@@ -191,6 +207,22 @@ const Profile = () => {
                       value={formData.industry || ""}
                       onChange={handleChange}
                     />
+                    <div className="flex flex-col gap-1.5 w-full">
+                      <label className="text-[13px] font-semibold text-primary/80 ml-0.5">
+                        Company Logo (Max 500KB)
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white/50 text-[14px] text-primary transition-all duration-200 outline-none focus:border-accent focus:ring-4 focus:ring-accent/10 hover:border-black/20"
+                      />
+                      {(formData.companyLogo || profile.companyLogo) && (
+                        <div className="mt-2">
+                          <img src={formData.companyLogo || profile.companyLogo} alt="Logo preview" className="h-16 object-contain rounded-md border border-black/10 p-1 bg-white" />
+                        </div>
+                      )}
+                    </div>
                   </>
                 )}
               </div>

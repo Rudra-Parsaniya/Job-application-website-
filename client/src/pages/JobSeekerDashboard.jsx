@@ -21,6 +21,8 @@ const JobSeekerDashboard = () => {
   const [message, setMessage] = useState("");
   const [applyingToJobId, setApplyingToJobId] = useState(null);
   const [coverNote, setCoverNote] = useState("");
+  const [resumeBase64, setResumeBase64] = useState("");
+  const [resumeError, setResumeError] = useState("");
   
   // Dummy stats for the SaaS feel
   const stats = [
@@ -75,17 +77,40 @@ const JobSeekerDashboard = () => {
   const handleApplyClick = (jobId) => {
     setApplyingToJobId(jobId);
     setCoverNote("");
+    setResumeBase64("");
+    setResumeError("");
     setMessage("");
+  };
+
+  const handleResumeChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        setResumeError("Resume size should be less than 2MB");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setResumeBase64(reader.result);
+        setResumeError("");
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleApplySubmit = async (jobId) => {
     setMessage("");
+    if (!coverNote.trim() || !resumeBase64) {
+      setMessage("Both Cover Note and Resume are required.");
+      return;
+    }
     try {
-      await api.post("/applications", { jobId, coverNote });
+      await api.post("/applications", { jobId, coverNote, resume: resumeBase64 });
       setMessage("Applied successfully!");
       setAppliedJobIds((prev) => new Set([...prev, jobId]));
       setApplyingToJobId(null);
       setCoverNote("");
+      setResumeBase64("");
     } catch (err) {
       setMessage(err.response?.data?.message || "Failed to apply");
     }
@@ -207,9 +232,14 @@ const JobSeekerDashboard = () => {
               {jobs.map((job) => (
                 <Card key={job._id} hover className="p-6 overflow-hidden relative">
                   <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="text-lg font-bold text-primary mb-1">{job.title}</h3>
-                      <p className="text-primary/60 text-sm font-medium">{job.company?.name || 'Company Name'}</p>
+                    <div className="flex gap-3 items-center">
+                      {job.postedBy?.companyLogo && (
+                        <img src={job.postedBy.companyLogo} alt={job.postedBy.name} className="w-12 h-12 object-contain rounded-lg border border-black/10 bg-white p-1" />
+                      )}
+                      <div>
+                        <h3 className="text-lg font-bold text-primary mb-1">{job.title}</h3>
+                        <p className="text-primary/60 text-sm font-medium">{job.postedBy?.name || 'Company Name'}</p>
+                      </div>
                     </div>
                     {appliedJobIds.has(job._id) && (
                       <span className="px-3 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-full border border-green-100 flex items-center gap-1">
@@ -246,11 +276,23 @@ const JobSeekerDashboard = () => {
                       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col w-full absolute inset-0 bg-white p-6 z-10">
                         <h4 className="text-sm font-bold text-primary mb-3">Apply for {job.title}</h4>
                         <textarea
-                          placeholder="Why are you a good fit? (Optional cover note)"
+                          placeholder="Why are you a good fit? (Required)"
                           value={coverNote}
                           onChange={(e) => setCoverNote(e.target.value)}
-                          className="w-full p-3 rounded-xl border border-black/10 bg-background/50 text-sm focus:outline-none focus:border-accent focus:ring-4 focus:ring-accent/10 transition-all mb-4 h-24 resize-none"
+                          className="w-full p-3 rounded-xl border border-black/10 bg-background/50 text-sm focus:outline-none focus:border-accent focus:ring-4 focus:ring-accent/10 transition-all mb-3 h-20 resize-none"
                         />
+                        <div className="mb-3">
+                          <label className="text-[12px] font-semibold text-primary/80 ml-0.5 block mb-1">
+                            Upload Resume (PDF/Doc, Max 2MB) *
+                          </label>
+                          <input
+                            type="file"
+                            accept=".pdf,.doc,.docx"
+                            onChange={handleResumeChange}
+                            className="w-full px-3 py-2 rounded-xl border border-black/10 bg-white/50 text-[13px] text-primary transition-all duration-200 outline-none focus:border-accent"
+                          />
+                          {resumeError && <p className="text-red-500 text-xs mt-1">{resumeError}</p>}
+                        </div>
                         <div className="flex gap-3 justify-end mt-auto">
                           <Button variant="outline" onClick={() => setApplyingToJobId(null)} className="py-2 text-sm">
                             Cancel
@@ -316,10 +358,10 @@ const JobSeekerDashboard = () => {
             </Link>
           </Card>
 
-          <Card className="p-6 bg-primary text-white border-none relative overflow-hidden">
+          <Card className="p-6 bg-primary text-accent border-none relative overflow-hidden">
              <div className="absolute top-[-20%] right-[-10%] w-32 h-32 rounded-full bg-accent/20 blur-[30px]" />
              <h3 className="text-sm font-bold mb-2 relative z-10">Pro Tip</h3>
-             <p className="text-xs text-white/70 leading-relaxed mb-4 relative z-10">
+             <p className="text-xs text-primary/60 leading-relaxed mb-4 relative z-10">
                Companies look for candidates who write personalized cover notes. Always try to add one when applying!
              </p>
           </Card>

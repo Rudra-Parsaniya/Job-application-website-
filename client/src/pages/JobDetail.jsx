@@ -16,6 +16,8 @@ const JobDetail = () => {
   const [messageType, setMessageType] = useState("success");
   const [showApplyForm, setShowApplyForm] = useState(false);
   const [coverNote, setCoverNote] = useState("");
+  const [resumeBase64, setResumeBase64] = useState("");
+  const [resumeError, setResumeError] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,16 +42,38 @@ const JobDetail = () => {
 
   const handleApplySubmit = async () => {
     setMessage("");
+    if (!coverNote.trim() || !resumeBase64) {
+      setMessageType("error");
+      setMessage("Both Cover Note and Resume are required.");
+      return;
+    }
     try {
-      await api.post("/applications", { jobId, coverNote });
+      await api.post("/applications", { jobId, coverNote, resume: resumeBase64 });
       setMessage("Applied successfully!");
       setMessageType("success");
       setHasApplied(true);
       setShowApplyForm(false);
       setCoverNote("");
+      setResumeBase64("");
     } catch (err) {
       setMessage(err.response?.data?.message || "Failed to apply");
       setMessageType("error");
+    }
+  };
+
+  const handleResumeChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        setResumeError("Resume size should be less than 2MB");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setResumeBase64(reader.result);
+        setResumeError("");
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -95,7 +119,11 @@ const JobDetail = () => {
                 </h1>
                 {job.postedBy?.name && (
                   <div className="flex items-center gap-2 text-lg font-semibold text-accent mb-4">
-                    <Building size={20} />
+                    {job.postedBy.companyLogo ? (
+                      <img src={job.postedBy.companyLogo} alt={job.postedBy.name} className="w-8 h-8 object-contain rounded border border-black/10 bg-white" />
+                    ) : (
+                      <Building size={20} />
+                    )}
                     {job.postedBy.name}
                     {job.postedBy?.industry && (
                       <span className="text-sm font-medium text-primary/40 bg-black/5 px-2 py-0.5 rounded-full ml-2">
@@ -199,16 +227,28 @@ const JobDetail = () => {
               <div className="space-y-4">
                 <div className="flex flex-col gap-1.5 w-full">
                   <label className="text-[13px] font-semibold text-primary/80 ml-0.5">
-                    Cover Note (Optional)
+                    Cover Note (Required)
                   </label>
                   <textarea
                     placeholder="Why are you a good fit for this role?"
                     value={coverNote}
                     onChange={(e) => setCoverNote(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-black/10 bg-white/50 text-[14px] text-primary transition-all duration-200 outline-none focus:border-accent focus:ring-4 focus:ring-accent/10 hover:border-black/20 min-h-[120px] resize-y"
+                    className="w-full px-4 py-3 rounded-xl border border-black/10 bg-white/50 text-[14px] text-primary transition-all duration-200 outline-none focus:border-accent focus:ring-4 focus:ring-accent/10 hover:border-black/20 min-h-[100px] resize-y"
                   />
                 </div>
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-1.5 w-full">
+                  <label className="text-[13px] font-semibold text-primary/80 ml-0.5">
+                    Upload Resume (PDF/Doc, Max 2MB) *
+                  </label>
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={handleResumeChange}
+                    className="w-full px-3 py-2.5 rounded-xl border border-black/10 bg-white/50 text-[14px] text-primary transition-all duration-200 outline-none focus:border-accent"
+                  />
+                  {resumeError && <p className="text-red-500 text-xs mt-1">{resumeError}</p>}
+                </div>
+                <div className="flex flex-col gap-3 mt-4">
                   <Button onClick={handleApplySubmit} className="w-full py-3">
                     Submit Application
                   </Button>

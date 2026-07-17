@@ -34,9 +34,10 @@ const updateProfile = async (req, res) => {
     }
 
     if (user.role === "company") {
-      const { companyWebsite, industry } = req.body;
+      const { companyWebsite, industry, companyLogo } = req.body;
       if (companyWebsite !== undefined) user.companyWebsite = companyWebsite;
       if (industry !== undefined) user.industry = industry;
+      if (companyLogo !== undefined) user.companyLogo = companyLogo;
     }
 
     await user.save();

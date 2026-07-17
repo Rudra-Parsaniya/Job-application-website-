@@ -66,7 +66,7 @@ const getAllJobs = async (req, res) => {
     const skip = (pageNumber - 1) * limitNumber;
 
     const jobs = await Job.find(query)
-      .populate("postedBy", "name industry companyWebsite")
+      .populate("postedBy", "name industry companyWebsite companyLogo")
       .skip(skip)
       .limit(limitNumber)
       .sort({ createdAt: -1 });
@@ -105,7 +105,7 @@ const getRecommendedJobs = async (req, res) => {
     const jobs = await Job.find({
       skillsRequired: { $regex: regexPattern, $options: "i" },
     })
-      .populate("postedBy", "name industry companyWebsite")
+      .populate("postedBy", "name industry companyWebsite companyLogo")
       .sort({ createdAt: -1 });
 
     res.status(200).json({ jobs });
@@ -127,7 +127,7 @@ const getJobById = async (req, res) => {
   try {
     const job = await Job.findById(req.params.id).populate(
       "postedBy",
-      "name industry companyWebsite bio"
+      "name industry companyWebsite bio companyLogo"
     );
 
     if (!job) {

@@ -101,7 +101,11 @@ const MyApplications = () => {
                       </h3>
                       {app.job?.postedBy?.name && (
                         <div className="flex items-center gap-1.5 text-sm font-medium text-primary/60">
-                          <Building size={14} />
+                          {app.job.postedBy.companyLogo ? (
+                            <img src={app.job.postedBy.companyLogo} alt={app.job.postedBy.name} className="w-5 h-5 object-contain rounded border border-black/10 bg-white" />
+                          ) : (
+                            <Building size={14} />
+                          )}
                           {app.job.postedBy.name}
                         </div>
                       )}

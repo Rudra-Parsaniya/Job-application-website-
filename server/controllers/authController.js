@@ -8,7 +8,7 @@ const { sendPasswordResetEmail } = require("../utils/email");
 
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, companyLogo } = req.body;
 
     const errors = validateRegister({ name, email, password, role });
     if (errors.length > 0) {
@@ -28,6 +28,7 @@ const registerUser = async (req, res) => {
       email,
       password: hashedPassword,
       role,
+      companyLogo: role === "company" ? companyLogo : "",
     });
 
     res.status(201).json({

@@ -172,16 +172,27 @@ const ViewApplicants = () => {
                 )}
               </div>
 
-              {app.applicant?.resumeLink && (
-                <div className="mt-6 pt-4 border-t border-black/5 flex justify-end">
-                  <a 
-                    href={app.applicant.resumeLink} 
-                    target="_blank" 
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-accent/10 text-accent rounded-xl text-sm font-semibold hover:bg-accent hover:text-white transition-colors"
-                  >
-                    View Resume
-                  </a>
+              {(app.resume || app.applicant?.resumeLink) && (
+                <div className="mt-6 pt-4 border-t border-black/5 flex justify-end gap-3">
+                  {app.applicant?.resumeLink && (
+                    <a 
+                      href={app.applicant.resumeLink} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-accent/10 text-accent rounded-xl text-sm font-semibold hover:bg-accent hover:text-white transition-colors"
+                    >
+                      View Profile Link
+                    </a>
+                  )}
+                  {app.resume && (
+                    <a 
+                      href={app.resume} 
+                      download={`resume_${app.applicant?.name?.replace(/\s+/g, '_')}.pdf`}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors"
+                    >
+                      Download Resume
+                    </a>
+                  )}
                 </div>
               )}
             </Card>

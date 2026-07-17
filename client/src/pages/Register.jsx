@@ -8,11 +8,27 @@ import Input from "../components/ui/Input";
 
 const Register = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ name: "", lastName: "", email: "", password: "", role: "jobseeker" });
+  const [formData, setFormData] = useState({ name: "", lastName: "", email: "", password: "", role: "jobseeker", companyLogo: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 500 * 1024) {
+        setError("Image size should be less than 500KB");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, companyLogo: reader.result });
+        setError(""); // clear error if successful
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -110,6 +126,25 @@ const Register = () => {
                 onChange={handleChange}
                 required
               />
+
+              {formData.role === "company" && (
+                <div className="flex flex-col gap-1.5 w-full">
+                  <label className="text-[13px] font-semibold text-primary/80 ml-0.5">
+                    Company Logo (Max 500KB)
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white/50 text-[14px] text-primary transition-all duration-200 outline-none focus:border-accent focus:ring-4 focus:ring-accent/10 hover:border-black/20"
+                  />
+                  {formData.companyLogo && (
+                    <div className="mt-2">
+                      <img src={formData.companyLogo} alt="Logo preview" className="h-16 object-contain rounded-md border border-black/10 p-1 bg-white" />
+                    </div>
+                  )}
+                </div>
+              )}
 
               <p className="text-xs text-primary/50 leading-relaxed mt-4">
                 By clicking "Agree & Join", you agree to the CareerPoint{" "}

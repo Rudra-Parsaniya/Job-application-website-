@@ -19,7 +19,11 @@ const applicationSchema = new mongoose.Schema(
     },
     coverNote: {
       type: String,
-      default: "",
+      required: true,
+    },
+    resume: {
+      type: String,
+      required: true,
     },
   },
   { timestamps: true }

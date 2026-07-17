@@ -36,9 +36,11 @@ const validateJob = (body) => {
   return errors;
 };
 
-const validateApplication = ({ jobId }) => {
+const validateApplication = ({ jobId, coverNote, resume }) => {
   const errors = [];
   if (!jobId) errors.push("Job ID is required");
+  if (!coverNote?.trim()) errors.push("Cover Note is required");
+  if (!resume?.trim()) errors.push("Resume is required");
   return errors;
 };
 

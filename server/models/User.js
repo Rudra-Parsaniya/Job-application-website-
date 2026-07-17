@@ -44,6 +44,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    companyLogo: {
+      type: String,
+      default: "",
+    },
     resetToken: {
       type: String,
       default: "",
