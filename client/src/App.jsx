@@ -13,6 +13,8 @@ import MyApplications from "./pages/MyApplications";
 import RecommendedJobs from "./pages/RecommendedJobs";
 import JobDetail from "./pages/JobDetail";
 import Profile from "./pages/Profile";
+import UserSearch from "./pages/UserSearch";
+import UserProfile from "./pages/UserProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
 
@@ -98,6 +100,23 @@ function App() {
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute>
+              <UserSearch />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/users/:id"
+          element={
+            <ProtectedRoute>
+              <UserProfile />
             </ProtectedRoute>
           }
         />

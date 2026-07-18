@@ -39,6 +39,10 @@ const Navbar = () => {
               </div>
             )}
 
+            <div className="flex items-center mr-4">
+               <Link to="/users" className="text-sm font-semibold text-primary/80 hover:text-accent transition-colors">Find Users</Link>
+            </div>
+
             <div className="h-6 w-px bg-black/10"></div>
 
             <Link to="/profile" className="flex items-center gap-2 text-sm font-semibold text-primary hover:text-accent transition-colors">

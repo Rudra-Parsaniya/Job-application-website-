@@ -56,6 +56,10 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    profileViews: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

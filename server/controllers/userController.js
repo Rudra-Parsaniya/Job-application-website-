@@ -78,5 +78,44 @@ const deleteProfile = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+const searchUsers = async (req, res) => {
+  try {
+    const { query } = req.query;
+    if (!query) {
+      return res.status(400).json({ message: "Search query is required" });
+    }
 
-module.exports = { getProfile, updateProfile, deleteProfile };
+    const regex = new RegExp(query, 'i');
+    
+    const users = await User.find({
+      $or: [{ name: regex }, { email: regex }]
+    }).select("name email role bio skills companyWebsite industry companyLogo profileViews createdAt");
+
+    res.status(200).json({ users });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+const getUserProfile = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Find user, increment profile views, and return public profile data
+    const user = await User.findByIdAndUpdate(
+      id,
+      { $inc: { profileViews: 1 } },
+      { new: true }
+    ).select("name email role bio skills resumeLink companyWebsite industry companyLogo profileViews createdAt");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ user });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+module.exports = { getProfile, updateProfile, deleteProfile, searchUsers, getUserProfile };

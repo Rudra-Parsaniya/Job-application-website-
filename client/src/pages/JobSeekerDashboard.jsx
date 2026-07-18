@@ -23,6 +23,9 @@ const JobSeekerDashboard = () => {
   const [coverNote, setCoverNote] = useState("");
   const [resumeBase64, setResumeBase64] = useState("");
   const [resumeError, setResumeError] = useState("");
+  const [profileViews, setProfileViews] = useState(0);
+  const [recommendedCount, setRecommendedCount] = useState(0);
+  const [profileCompletion, setProfileCompletion] = useState(0);
   
   // Dummy stats for the SaaS feel
   const stats = [
@@ -62,6 +65,43 @@ const JobSeekerDashboard = () => {
 
   useEffect(() => {
     fetchAppliedJobs();
+    
+    const fetchProfile = async () => {
+      try {
+        const response = await api.get('/users/me');
+        const user = response.data?.user;
+        if (user) {
+          if (user.profileViews !== undefined) {
+             setProfileViews(user.profileViews);
+          }
+          // Calculate profile completion
+          const fields = ['name', 'email', 'phone', 'bio', 'skills', 'resumeLink'];
+          let filled = 0;
+          fields.forEach(field => {
+            if (user[field] && user[field].toString().trim() !== '') {
+              filled++;
+            }
+          });
+          setProfileCompletion(Math.round((filled / fields.length) * 100));
+        }
+      } catch (err) {
+        console.error("Failed to fetch profile views", err);
+      }
+    };
+    
+    const fetchRecommendedCount = async () => {
+      try {
+        const response = await api.get('/jobs/recommended');
+        if (response.data.jobs) {
+          setRecommendedCount(response.data.jobs.length);
+        }
+      } catch (err) {
+        console.error("Failed to fetch recommended jobs", err);
+      }
+    };
+
+    fetchProfile();
+    fetchRecommendedCount();
   }, []);
 
   useEffect(() => {
@@ -128,8 +168,8 @@ const JobSeekerDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
         {[
           { label: "Applications Sent", value: appliedJobIds.size || "0", icon: ArrowRight, color: "text-blue-500", bg: "bg-blue-500/10" },
-          { label: "Profile Views", value: "24", icon: Activity, color: "text-green-500", bg: "bg-green-500/10" },
-          { label: "Recommended Jobs", value: "12+", icon: TrendingUp, color: "text-purple-500", bg: "bg-purple-500/10" },
+          { label: "Profile Views", value: profileViews, icon: Activity, color: "text-green-500", bg: "bg-green-500/10" },
+          { label: "Recommended Jobs", value: recommendedCount, icon: TrendingUp, color: "text-purple-500", bg: "bg-purple-500/10" },
         ].map((stat, i) => (
           <Card key={i} className="p-6 flex items-center justify-between">
             <div>
@@ -348,10 +388,10 @@ const JobSeekerDashboard = () => {
               <User size={16} className="text-accent" /> Complete Profile
             </h3>
             <div className="w-full bg-black/5 rounded-full h-2 mb-3">
-              <div className="bg-accent h-2 rounded-full w-[70%]"></div>
+              <div className="bg-accent h-2 rounded-full transition-all duration-500" style={{ width: `${profileCompletion}%` }}></div>
             </div>
             <p className="text-xs text-primary/60 mb-4 leading-relaxed">
-              You are 70% complete. Add your skills to get better job recommendations.
+              You are {profileCompletion}% complete. {profileCompletion < 100 ? "Add more details to get better job recommendations." : "Your profile is looking great!"}
             </p>
             <Link to="/profile">
               <Button variant="outline" className="w-full text-xs py-2">Update Profile</Button>
